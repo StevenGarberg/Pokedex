@@ -1,0 +1,74 @@
+﻿@page "/pokemon/{Name}"
+@using PokeApiNet
+@inject NavigationManager NavigationManager
+@inject PokeApiClient PokeApiClient
+
+<PageTitle>@Name | Pokédex</PageTitle>
+
+<h1>@Name</h1>
+
+@if (Pokemon != null)
+{
+    <div class="row">
+        <div class="col-8">
+            <h3>Moves</h3>
+            @if (Pokemon.Moves != null && Pokemon.Moves.Any())
+            {
+                <ul>
+                    @foreach (var move in Pokemon.Moves)
+                    {
+                        <li>@move.Move.Name</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No moves known</p>
+            }
+        </div>
+        <div class="col-4">
+            <h2>Pokemon Information</h2>
+            <h3># @Pokemon.Id</h3>
+            <img src="@Pokemon.Sprites.FrontDefault" alt="@Name"/>
+            <h3>Types</h3>
+            @foreach (var type in Pokemon.Types)
+            {
+                <span class="badge badge-primary">@type.Type.Name</span>
+            }
+            <h3>Height</h3>
+            <p>@Pokemon.Height</p>
+            <h3>Weight</h3>
+            @Pokemon.Weight
+        </div>
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; }
+
+    private Pokemon Pokemon { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            Pokemon = await PokeApiClient.GetResourceAsync<Pokemon>(Name);
+            if (Pokemon == null)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            await base.OnParametersSetAsync();
+        }
+        catch
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+}
